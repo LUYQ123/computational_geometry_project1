@@ -8,12 +8,12 @@ public class ParallelMerge {
     static Long[] a;
     static Long[] b;
 
-    static int pnum = 23;
+    static int pnum = 9;
 
-    static int lengthA = 1000000;
-    static int lengthB = 10000;
-    static int beginningA = 0;
-    static int beginningB = 0;
+    static int lengthA = 1000;
+    static int lengthB = 1000;
+    static long beginningA = 0;
+    static long beginningB = -3;
 //    static int lengthA = 1000;
 //    static int lengthB = 100000;
 //    static int beginningA = 0;
@@ -28,7 +28,8 @@ public class ParallelMerge {
             this.rank = rank;
         }
 
-        public void run() {
+        public void run()
+        {
             Long maxx = Long.max(a[a.length - 1], b[b.length - 1]);
             int lastFind = 0;
             long syn=0;
@@ -73,10 +74,10 @@ public class ParallelMerge {
                     }
                     result[rank[i] + left] = a[rank[i]];
                     lastFind = rank[i] + left;
-                    if (a[rank[i]].equals(maxx)) {
-                        int ttmp = lastFind;
-                        while (ttmp < result.length) result[ttmp++] = a[rank[i]];
-                    }
+//                    if (a[rank[i]].equals(maxx)) {
+//                        int ttmp = lastFind;
+//                        while (ttmp < result.length) result[ttmp++] = a[rank[i]];
+//                    }
                     // int t = rank[i] + left;
                     //System.out.print(t+" ");
                 }
@@ -106,10 +107,10 @@ public class ParallelMerge {
                     result[rank[i] + left] = b[rank[i]];
                     // int t = rank[i] + left;
                     lastFind = rank[i] + left;
-                    if (b[rank[i]] .equals(maxx)) {
-                        int ttmp = lastFind;
-                        while (ttmp < result.length) result[ttmp++] = b[rank[i]];
-                    }
+//                    if (b[rank[i]] .equals(maxx)) {
+//                        int ttmp = lastFind;
+//                        while (ttmp < result.length) result[ttmp++] = b[rank[i]];
+//                    }
                 }
 //                if (i!=0 && i % (this.Class.length / 10) == 0) {
 //                    System.out.println(this.getName() + " " + i / (this.Class.length / 10) + "/10 tasks cpmpeleted");
@@ -117,16 +118,17 @@ public class ParallelMerge {
             }
           //  System.out.println(this.getName()+" "+syn+" times synchronized");
         }
+
     }
 
-    static public Long[] getArray(int beginning, int length) {
+    static public Long[] getArray(long beginning, int length) {
         Long[] num = new Long[length];
-        num[0] = (long) beginning;
-        Random r = new Random();
+        num[0] =  beginning;
+        Random r = new Random(1);
         for (int i = 1; i < length; i++) {
-            int tmp = r.nextInt(2);
-            if (tmp == 0) num[i] = num[i - 1];
-            else num[i] = num[i - 1] + r.nextInt(5);
+            int tmp = r.nextInt(10);
+            if (tmp < 8) num[i] = num[i - 1];
+            else num[i] = num[i - 1] + r.nextInt(4);
         }
         return num;
     }
@@ -152,7 +154,7 @@ public class ParallelMerge {
 //        System.out.println();
 
         Merge[] tasks = new Merge[pnum];
-        long start = System.currentTimeMillis();
+        long start;
 
         int right = size / pnum;
         int last = size % pnum;
@@ -198,6 +200,7 @@ public class ParallelMerge {
         }
 
         System.out.println("finish distribute tasks");
+        start = System.currentTimeMillis();
         try {
             for (int i = 0; i < pnum; i++) {
                 tasks[i].join();
@@ -232,5 +235,7 @@ public class ParallelMerge {
             System.out.println("checked");
         else
             System.out.println("unchecked");
+        long end= System.currentTimeMillis();
+        System.out.println("Finish in "+(end-start) +  " Millis");
     }
 }
