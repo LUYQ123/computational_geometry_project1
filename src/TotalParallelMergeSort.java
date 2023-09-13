@@ -3,18 +3,17 @@ import java.util.*;
 public class TotalParallelMergeSort {
     static Long[] arr;
     static Long[] checking;
-    static int pnum = 10;
+    static int pnum = 23;
 
     static Long[] result;
 
-    static int size=2000;
+    static int size=2000000;
 
-    static int beginning=0;
+    static int beginning=-9999;
 
     static Queue<Long[]> que= new LinkedList<>();
     static Long[] a;
     static Long[] b;
-
 
     private static class MergeTask extends Thread {
         int[] Class;
@@ -25,10 +24,7 @@ public class TotalParallelMergeSort {
         }
 
         public void run() {
-            Long maxx = Long.max(a[a.length - 1], b[b.length - 1]);
             int lastFind = 0;
-            long syn=0;
-            //System.out.println(this.getName() + " " + this.Class.length + " tasks distributed");
             for (int i = 0; i < this.Class.length; i++) {
                 if (i > 0 && this.Class[i] == this.Class[i - 1] &&
                         ((this.Class[i] == 0 && a[rank[i]].equals(a[rank[i] - 1]) ) ||
@@ -36,7 +32,7 @@ public class TotalParallelMergeSort {
                     boolean tmp = true;
                     while (lastFind < result.length && tmp) {
                         synchronized (result[lastFind]) {
-                            if (result[lastFind] != Long.MIN_VALUE) {lastFind++; syn++;}
+                            if (result[lastFind] != Long.MIN_VALUE) {lastFind++;}
                               else {
                                 result[lastFind] = this.Class[i] == 0 ? a[rank[i]] : b[rank[i]];
                                 tmp = false;
@@ -54,47 +50,20 @@ public class TotalParallelMergeSort {
                         } else if (a[rank[i]] > b[mid]) {
                             left = mid + 1;
                         }
-                        //System.out.println(left+" "+right);
                     }
                     while (left < b.length && a[rank[i]] > b[left]) left++;
                     boolean tmp = true;
                     while (tmp) {
-//                        if((rank[i]+left)==result.length){
-//                            String ttmp="";
-//                            ttmp+="a:";
-//                            for(Long j: a){
-//                                ttmp+=" "+j;
-//                            }
-//                            ttmp+="\n";
-//                            ttmp+="b:";
-//                            for(Long j: b){
-//                                ttmp+=" "+j;
-//                            }
-//                            ttmp+="\n";
-//                            ttmp+="i "+i+" rank[i] "+rank[i]+" left "+left+" a length "+a.length+" b length "+b.length  +"\n class ";
-//                            for(int j=0;j<this.Class.length;j++)
-//                                ttmp+=this.Class[j]+" ";
-//                            ttmp+="\n rank";
-//                            for(int j=0;j<this.rank.length;j++)
-//                                ttmp+=this.rank[j]+" ";
-//                            System.out.println(ttmp);
-//                        }
                         synchronized (result[rank[i] + left]) {
                             if (result[rank[i] + left] != Long.MIN_VALUE) {
                                 left++;
                             } else {
+                                result[rank[i] + left] = a[rank[i]];
                                 tmp = false;
                             }
                         }
                     }
-                    result[rank[i] + left] = a[rank[i]];
                     lastFind = rank[i] + left;
-//                    if (a[rank[i]] .equals( maxx)) {
-//                        int ttmp = lastFind;
-//                        while (ttmp < result.length) result[ttmp++] = a[rank[i]];
-//                    }
-//                     int t = rank[i] + left;
-//                    System.out.print(t+" ");
                 }
                 else if (this.Class[i] == 1) {
                     int left = 0;
@@ -110,46 +79,19 @@ public class TotalParallelMergeSort {
                     while (left < a.length && b[rank[i]] > a[left]) left++;
                     boolean tmp = true;
                     while (tmp) {
-//                        if((rank[i]+left)==result.length){
-//                            String ttmp="";
-//                            ttmp+="a:";
-//                            for(Long j: a){
-//                                ttmp+=" "+j;
-//                            }
-//                            ttmp+="\n";
-//                            ttmp+="b:";
-//                            for(Long j: b){
-//                                ttmp+=" "+j;
-//                            }
-//                            ttmp+="\n";
-//                            ttmp+="i "+i+" rank[i] "+rank[i]+" left "+left+" a length "+a.length+" b length "+ b.length+"\n class ";
-//                            for(int j=0;j<this.Class.length;j++)
-//                                ttmp+=this.Class[j]+" ";
-//                            ttmp+="\n rank";
-//                            for(int j=0;j<this.rank.length;j++)
-//                                ttmp+=this.rank[j]+" ";
-//                            System.out.println(ttmp);
-//                        }
-                        if((rank[i] + left)>=result.length)
-                            System.out.println("asfasdgvwaf");
                         synchronized (result[rank[i] + left]) {
                             if ( result[rank[i] + left] != Long.MIN_VALUE) {
                                 left++;
                             } else {
+                                result[rank[i] + left] = b[rank[i]];
                                 tmp = false;
                             }
                         }
                     }
-                    result[rank[i] + left] = b[rank[i]];
                     lastFind = rank[i] + left;
-//                    if (b[rank[i]].equals(maxx)) {
-//                        int ttmp = lastFind;
-//                        while (ttmp < result.length) result[ttmp++] = b[rank[i]];
-//                    }
                 }
             }
         }
-
     }
     private static class MergeSortTask extends Thread {
         private long left;
@@ -164,7 +106,6 @@ public class TotalParallelMergeSort {
                 this.result[i]=arr[(int) (i+left)];
             }
         }
-
         @Override
         public void run() {
             mergeSort(this.result, (int) (right-left));
@@ -178,7 +119,6 @@ public class TotalParallelMergeSort {
         int mid = n / 2;
         Long[] l = new Long[mid];
         Long[] r = new Long[n - mid];
-
         for (int i = 0; i < mid; i++) {
             l[i] = a[i];
         }
@@ -187,7 +127,6 @@ public class TotalParallelMergeSort {
         }
         mergeSort(l, mid);
         mergeSort(r, n - mid);
-
         merge(a, l, r, mid, n - mid);
     }
 
@@ -247,8 +186,8 @@ public class TotalParallelMergeSort {
         for (int i = 0; i < checking.length; i++) {
             if (!result[i].equals(checking[i])) {
                 check = false;
-                break;
-                //System.out.println(i + " " + result[i] + " " + checking[i]);
+                //break;
+                System.out.println(i + " " + result[i] + " " + checking[i]);
             }
             // System.out.print(result[i-1]+" ");
         }
@@ -259,20 +198,15 @@ public class TotalParallelMergeSort {
     }
 
     public static void main(String[] args) {
-
         MergeSortTask[] tasks = new MergeSortTask[pnum];
-
         arr=getArray(beginning,size);
-
         checking = new Long[size];
         System.arraycopy(arr, 0, checking, 0, size);
         long start = System.currentTimeMillis();
         Arrays.parallelSort(checking);
         long end = System.currentTimeMillis();
         System.out.println("Build in parallel sort cost "+(end-start)+" Millis.");
-
         start = System.currentTimeMillis();
-
         int left=0;
         int right=size/pnum;
         int last=size%pnum;
@@ -293,14 +227,6 @@ public class TotalParallelMergeSort {
         } catch (Exception e) {
             System.out.println("Error " + e);
         }
-//        for(int i=0;i<pnum;i++){
-//            System.out.print("thread "+i+": ");
-//            for(int j=0;j<tasks[i].result.length;j++){
-//                System.out.print(tasks[i].result[j]+" ");
-//            }
-//            System.out.println();
-//        }
-
         end = System.currentTimeMillis();
         System.out.println("distribute into "+pnum+" sub tasks and get "+pnum+" sorted array cost "+(end-start)+" Millis.");
         start = System.currentTimeMillis();
@@ -312,15 +238,6 @@ public class TotalParallelMergeSort {
         for(int i=0;i<pnum;i++){
             que.offer(tasks[i].result);
         }
-
-//        for(Long[] tmp : que) {
-//            for (int i = 0; i < tmp.length; i++) {
-//                // System.out.print("(long) "+tmp[i]+", ");
-//                System.out.print(tmp[i] + " ");
-//            }
-//            System.out.println();
-//        }
-//
         while(que.size()>1){
             a=que.poll();
             b=que.poll();
@@ -370,7 +287,6 @@ public class TotalParallelMergeSort {
                 right = size / pnum;
                 mergeTasks[i].start();
             }
-
             try {
                 for (int i = 0; i < pnum; i++) {
                     mergeTasks[i].join();
@@ -378,58 +294,11 @@ public class TotalParallelMergeSort {
             } catch (Exception e) {
                 System.out.println("Error " + e);
             }
-
             que.offer(result);
-//            boolean ttmp=false;
-//            for(int i=0;i<result.length;i++){
-//                if(result[i]==Long.MIN_VALUE){
-//                    ttmp=true;
-//                    System.out.print(i+" "+ result[i]+" ");
-//                    ttmp=true;
-//                }
-//            }
-//            if(ttmp){
-//                System.out.print("a ");
-//                for(int i=0;i< a.length;i++){
-//                    System.out.print(a[i]+ " ");
-//                }
-//                System.out.println();
-//                System.out.print("b ");
-//                for(int i=0;i< b.length;i++){
-//                    System.out.print(b[i]+ " ");
-//                }
-//                System.out.println();
-//                System.out.print("result ");
-//                for(int i=0;i<result.length;i++){
-//                    System.out.print(result[i]+" ");
-//                }
-//                System.out.println();
-
-//                for(int i=0;i< mergeTasks.length;i++){
-//                    System.out.print("rank ");
-//                    for(int j=0;j<mergeTasks[i].rank.length;j++) {
-//                        System.out.print(mergeTasks[i].rank[j] + " ");
-//                    }
-//                    System.out.println();
-//                    System.out.print("class ");
-//                    for(int j=0;j<mergeTasks[i].Class.length;j++) {
-//                        System.out.print(mergeTasks[i].Class[j] + " ");
-//                    }
-//                    System.out.println();
-//
-//                }
-//                //System.out.println();
-//            }
-            //System.out.println(que.size());
-
         }
-
         result=que.peek();
-
         end=System.currentTimeMillis();
-
         System.out.println("finish parallel merge in "+(end-start)+" Millis");
-
         check(result);
     }
 }

@@ -2,9 +2,10 @@ import java.util.Arrays;
 import java.util.Random;
 
 public class ExpParallelMergeSort {
-    static long[] arr;
-    static int size = 1 << 6;
-    static int pnum = 10;
+    static Long[] arr;
+    static Long[][] checking;
+    static int size = 1000000;
+    static int pnum = 23;
     private static class MergeSortTask extends Thread {
         private long left;
         private long right;
@@ -21,11 +22,7 @@ public class ExpParallelMergeSort {
 
         @Override
         public void run() {
-            mergeSort(this.result, (int) (right-left));
-        }
-
-        public Long[] getResult() {
-            return result;
+            mergeSort(this.result, (int) (right - left));
         }
     }
 
@@ -68,7 +65,7 @@ public class ExpParallelMergeSort {
     }
 
 
-    private static Long[] sequenqentMergeOnTheLastStep(MergeSortTask tasks[]){
+    private static Long[] sequenqentMergeOnTheLastStep(MergeSortTask[] tasks){
         Long[] result=new Long[tasks[0].result.length];
         System.arraycopy(tasks[0].result,0,result,0,tasks[0].result.length);
         for(int i=1;i<pnum;i++){
@@ -81,28 +78,49 @@ public class ExpParallelMergeSort {
         return result;
     }
 
-    public static void main(String[] args) {
-
-
-        Boolean[] exist=new Boolean[size];
-        Arrays.fill(exist,false);
-        MergeSortTask tasks[] = new MergeSortTask[pnum];
-
-        arr = new long[size];
-        Random r = new Random();
-        for (int i = 0; i < size; i++) {
-            while(true) {
-                int tmp = r.nextInt(size);
-                if (!exist[tmp]) {
-                    arr[i] = tmp;
-                    exist[tmp]=true;
-                    break;
-                }
-
+    static public void check(Long[] truth, Long[] result){
+        boolean check = true;
+        if(result.length!=truth.length){
+            System.out.println("length do mot match");
+        }
+        for (int i = 0; i < truth.length; i++) {
+            if (!result[i].equals(truth[i])) {
+                check = false;
+                break;
             }
         }
-        long start = System.currentTimeMillis();
+        if (check) {
+            //System.out.println("checked");
+        }
+        else
+            System.out.println("unchecked");
+    }
 
+    static public Long[] getArray(int beginning, int length) {
+        Long[] num = new Long[length];
+        num[0] = (long) beginning;
+        Random r = new Random();
+        for (int i = 1; i < length; i++) {
+            int tmp = r.nextInt(10);
+            if (tmp < 7 ) num[i] = num[i - 1];
+            else num[i] = num[i - 1] + r.nextInt(4);
+        }
+        Long[] randomPosition=new Long[length];
+        Arrays.fill(randomPosition,Long.MIN_VALUE);
+        for(int i=0;i<length;i++){
+            int tmp=0;
+            while(randomPosition[tmp]!=Long.MIN_VALUE){ tmp = r.nextInt(length);}
+            randomPosition[tmp]=num[i];
+        }
+        return randomPosition;
+    }
+
+    public static void main(String[] args) {
+        MergeSortTask[] tasks = new MergeSortTask[pnum];
+        arr = getArray(0,size);
+        checking = new Long[pnum][0];
+        long end = System.currentTimeMillis();
+        long start = System.currentTimeMillis();
         int left=0;
         int right=size/pnum;
         int last=size%pnum;
@@ -112,16 +130,13 @@ public class ExpParallelMergeSort {
                 last--;
             }
             tasks[i] = new MergeSortTask(left, right);
-          //  System.out.println(left+"  "+right);
+            checking[i]=new Long[right-left];
+            System.arraycopy(arr,left,checking[i],0,right-left);
+            Arrays.parallelSort(checking[i]);
             left = right;
             right += size / pnum;
             tasks[i].start();
         }
-//        for (int i = 0; i < pnum; i++) {
-//            tasks[i] = new MergeSortTask(size / pnum * i, size / pnum * (i + 1));
-//            tasks[i].start();
-//        }
-
         try {
             for (int i = 0; i < pnum; i++) {
                 tasks[i].join();
@@ -129,32 +144,18 @@ public class ExpParallelMergeSort {
         } catch (Exception e) {
             System.out.println("Error " + e);
         }
-
-//        for(int i=0;i<pnum;i++){
-//            System.out.print("thread "+i+": ");
-//            for(int j=0;j<tasks[i].result.length;j++){
-//                System.out.print(tasks[i].result[j]+" ");
-//            }
-//            System.out.println();
-//        }
-//
-
         Long[] result= sequenqentMergeOnTheLastStep(tasks);
         long endt = System.currentTimeMillis();
-        System.out.print("Sorted array: " );
-        boolean rightness=true;
-        for(int i=1;i<result.length;i++){
-            if(result[i]-result[i-1]!=1){
-                rightness=false;
-            }
-        }
-        if(rightness && result[result.length-1]==size-1){
-            System.out.println("Sorted");
-        }
-        else{
-            System.out.println("Wrong");
-        }
-        System.out.println();
         System.out.println("Took " + (endt - start) + " Millis");
+        boolean rightness=true;
+        for(int i=0;i<pnum;i++) {
+            check(checking[i], tasks[i].result);
+        }
+        checking[0]=new Long[size];
+        System.arraycopy(arr,0,checking[0],0,size);
+        Arrays.parallelSort(checking[0]);
+        check(checking[0], result);
+        System.out.println();
+
     }
 }
