@@ -1,5 +1,4 @@
-import java.util.Arrays;
-import java.util.Random;
+import java.util.*;
 
 public class ExpParallelMergeSort {
     static Long[] arr;
@@ -66,14 +65,25 @@ public class ExpParallelMergeSort {
 
 
     private static Long[] sequenqentMergeOnTheLastStep(MergeSortTask[] tasks){
-        Long[] result=new Long[tasks[0].result.length];
-        System.arraycopy(tasks[0].result,0,result,0,tasks[0].result.length);
-        for(int i=1;i<pnum;i++){
-            Long[] tmp=new Long[result.length+tasks[i].result.length];
-           // System.out.println(i);
-            merge(tmp,result,tasks[i].result,result.length,tasks[i].result.length);
-            result=new Long[tmp.length];
-            System.arraycopy(tmp,0,result,0,tmp.length);
+        Long[] result=new Long[size];
+        Queue<Long>[] queues=new Queue[pnum];
+        for(int i = 0; i < pnum; i++)
+            queues[i] = new LinkedList<>();
+        for(int i=0;i<pnum;i++){
+            for(int j=0;j<tasks[i].result.length;j++){
+                queues[i].offer(tasks[i].result[j]);
+            }
+        }
+        for(int i=0;i<size;i++){
+            long min=Long.MAX_VALUE;
+            int num=0;
+            for(int j=0;j<pnum;j++){
+                if(!queues[j].isEmpty() && queues[j].peek()<min){
+                    min=queues[j].peek();
+                    num=j;
+                }
+            }
+            result[i]=queues[num].poll();
         }
         return result;
     }

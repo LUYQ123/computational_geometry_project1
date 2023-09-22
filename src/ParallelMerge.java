@@ -7,8 +7,8 @@ public class ParallelMerge {
     static Long[] a;
     static Long[] b;
     static int pnum = 50;
-    static int lengthA = 100000;
-    static int lengthB = 10000000;
+    static int lengthA = 1000;
+    static int lengthB = 10000;
     static long beginningA = 0;
     static long beginningB = -5850;
 
@@ -59,11 +59,12 @@ public class ParallelMerge {
                             if (result[rank[i] + left] != Long.MIN_VALUE) {
                                 left++;
                             } else {
+                                result[rank[i] + left] = a[rank[i]];
                                 tmp = false;
                             }
                         }
                     }
-                    result[rank[i] + left] = a[rank[i]];
+
                     lastFind = rank[i] + left;
                 } else if (this.Class[i] == 1) {
                     int left = 0;
@@ -83,11 +84,11 @@ public class ParallelMerge {
                             if (result[rank[i] + left] != Long.MIN_VALUE) {
                                 left++;
                             } else {
+                                result[rank[i] + left] = b[rank[i]];
                                 tmp = false;
                             }
                         }
                     }
-                    result[rank[i] + left] = b[rank[i]];
                     lastFind = rank[i] + left;
                 }
             }
